@@ -3,9 +3,6 @@
 from __future__ import print_function, unicode_literals, absolute_import
 import sys
 
-# Import Pepper Libraries
-import pepper
-
 from mock import patch, MagicMock
 
 PAYLOAD = {
@@ -26,41 +23,36 @@ PAYLOAD = {
 }
 
 
-@patch('pepper.cli.PepperCli.login', MagicMock(side_effect=lambda arg: None))
 @patch('pepper.cli.PepperCli.low', MagicMock(side_effect=lambda api, load: PAYLOAD))
-def test_default():
+def test_default(session_pepper_no_login):
     sys.argv = ['pepper', 'minion_id', 'request']
-    ret_code = pepper.script.Pepper()()
+    ret_code = session_pepper_no_login.script.Pepper()()
     assert ret_code == 0
 
 
-@patch('pepper.cli.PepperCli.login', MagicMock(side_effect=lambda arg: None))
 @patch('pepper.cli.PepperCli.low', MagicMock(side_effect=lambda api, load: PAYLOAD))
-def test_fail_any():
+def test_fail_any(session_pepper_no_login):
     sys.argv = ['pepper', '--fail-any', 'minion_id', 'request']
-    ret_code = pepper.script.Pepper()()
+    ret_code = session_pepper_no_login.script.Pepper()()
     assert ret_code == 127
 
 
-@patch('pepper.cli.PepperCli.login', MagicMock(side_effect=lambda arg: None))
 @patch('pepper.cli.PepperCli.low', MagicMock(side_effect=lambda api, load: PAYLOAD))
-def test_fail_any_none():
+def test_fail_any_none(session_pepper_no_login):
     sys.argv = ['pepper', '--fail-any-none', 'minion_id', 'request']
-    ret_code = pepper.script.Pepper()()
+    ret_code = session_pepper_no_login.script.Pepper()()
     assert ret_code == 127
 
 
-@patch('pepper.cli.PepperCli.login', MagicMock(side_effect=lambda arg: None))
 @patch('pepper.cli.PepperCli.low', MagicMock(side_effect=lambda api, load: PAYLOAD))
-def test_fail_all():
+def test_fail_all(session_pepper_no_login):
     sys.argv = ['pepper', '--fail-all', 'minion_id', 'request']
-    ret_code = pepper.script.Pepper()()
+    ret_code = session_pepper_no_login.script.Pepper()()
     assert ret_code == 127
 
 
-@patch('pepper.cli.PepperCli.login', MagicMock(side_effect=lambda arg: None))
 @patch('pepper.cli.PepperCli.low', MagicMock(side_effect=lambda api, load: PAYLOAD))
-def test_fail_all_none():
+def test_fail_all_none(session_pepper_no_login):
     sys.argv = ['pepper', '--fail-all-none', 'minion_id', 'request']
-    ret_code = pepper.script.Pepper()()
+    ret_code = session_pepper_no_login.script.Pepper()()
     assert ret_code == 127

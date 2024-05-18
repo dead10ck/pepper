@@ -1,0 +1,115 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=64",
+  "setuptools_scm>=8",
+]
+
+[project]
+name = "salt-pepper"
+description = "A CLI front-end to a running salt-api system"
+readme = "README.rst"
+
+requires-python = ">=3.8"
+dynamic = ["version"]
+
+classifiers = [
+  "Programming Language :: Python",
+  "Programming Language :: Cython",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: System :: Clustering",
+  "Topic :: System :: Distributed Computing"
+]
+
+[[project.authors]]
+name = "Seth House"
+email = "shouse@saltstack.com"
+
+[project.urls]
+Homepage = "https://saltstack.com"
+
+[project.optional-dependencies]
+salt = ["salt"]
+kerberos = ["requests-gssapi>=1.1.0"]
+
+[project.scripts]
+pepper = "pepper.script:main"
+
+[tool.setuptools_scm]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "setuptools_scm",
+  "mock",
+  "types-mock",
+  "pytest>=6.0.0",
+  "pytest-rerunfailures",
+  "pytest-cov",
+  "pytest-salt-factories==0.912.2",
+  "CherryPy",
+  "importlib-metadata<5.0.0",
+  "pyzmq>=17.0.0 ; python_version < '3.9'",
+  "pyzmq>19.0.2 ; python_version >= '3.9'",
+]
+
+# post-install-commands = [
+#   "pip install -e {env:HOME}/src/salt/pytest-salt-factories",
+#   "pip install -e {env:HOME}/src/salt/pytest-shell-utilities",
+# ]
+
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+salt = ["3006.8", "3007.0", "master", "local"]
+backend = ["cherrypy", "tornado"]
+
+[tool.hatch.envs.test.scripts]
+test = "pytest -v --salt-api-backend=rest_{matrix:backend:cherrypy} {args}"
+
+[tool.hatch.envs.test.overrides]
+name.'^py.+-\d'.dependencies = ["salt~={matrix:salt}"]
+
+matrix.salt.dependencies = [
+  { value = "salt @ git+https://github.com/saltstack/salt.git@master", if = ["master"] },
+]
+
+[[tool.hatch.envs.test.overrides.matrix.salt.scripts]]
+key = "test"
+value = """
+if [ -n "$SALTPATH" ]; then
+  # pip install -e file://{env:HOME}/src/salt/pytest-salt-factories
+  # pip install -e file://{env:HOME}/src/salt/pytest-shell-utilities
+  # pip install -e file://{env:HOME}/src/psutil
+  # pip install -e file://{env:SALTPATH}
+  pytest -v --salt-api-backend=rest_{matrix:backend:cherrypy} {args}
+else
+  echo 'Please set the SALTPATH environment variable to test a local salt' >&2
+fi
+"""
+if = ["local"]
+
+[tool.hatch.envs.dev]
+template = "test"
+
+extra-dependencies = [
+  "python-lsp-server[all]",
+  "pylsp-mypy",
+  "python-lsp-black",
+  "pyls-isort",
+]
+
+[tool.pylsp-mypy]
+enabled = true
+live_mode = false
+dmypy = false
+report_progress = true
